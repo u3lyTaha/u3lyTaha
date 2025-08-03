@@ -109,18 +109,20 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                                         });
                                     });
                                 }));
-                                // 统计所有已知节点的数值
-                                const allValues = children.map(child => participantMetaMap.get(child)?.participantValue).filter(Boolean);
+                                const participantMetas = children.map(child => participantMetaMap.get(child)).filter(Boolean);
+                                console.log('当前节点总数:', participantMetas.length);
+                                const allValues = participantMetas.map(meta => meta.participantValue);
                                 const max = _.max(allValues);
                                 const min = _.min(allValues);
                                 const avg = _.mean(allValues);
-                                console.log('当前节点总数:', allValues.length);
                                 console.log(`最大值: ${max}, 最小值: ${min}, 平均值: ${avg}`);
-                                // 打印新增节点及其数值
-                                for (const child of added) {
-                                    const val = participantMetaMap.get(child);
-                                    console.log('新增节点 id:', child, '元信息:', val);
-                                }
+                                const allIps = participantMetas.map(meta => meta.ip);
+                                const uniqueIpCount = new Set(allIps).size;
+                                const top10Ips = Object.entries(_.countBy(allIps))
+                                    .sort((a, b) => b[1] - a[1])
+                                    .slice(0, 10);
+                                console.log('不重复IP数量:', uniqueIpCount);
+                                console.log('出现次数最多的前10个IP:', top10Ips);
                                 console.log('新增节点总数:', added.length);
                                 console.log(`本轮耗时: ${((Date.now() - startGet) / 1000).toFixed(1)} 秒`);
                             }
