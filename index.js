@@ -74,17 +74,16 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                 let barrierPassed = false;
                 let leaderNode;
                 let noNewNodeTimer = null;
-                const NO_NEW_NODE_TIMEOUT = 30_000;
                 function resetNoNewNodeTimer() {
                     if (noNewNodeTimer)
                         clearTimeout(noNewNodeTimer);
                     noNewNodeTimer = setTimeout(() => {
                         if (!barrierPassed) {
-                            console.error(`::error::30秒内未检测到新节点，自动退出`);
+                            console.error(`::error::60秒内未检测到新节点，自动退出`);
                             client.close();
                             process.exit(1);
                         }
-                    }, NO_NEW_NODE_TIMEOUT);
+                    }, 60_000);
                 }
                 function checkBarrier() {
                     if (barrierPassed)
