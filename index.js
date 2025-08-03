@@ -2,40 +2,36 @@ import * as zookeeper from 'node-zookeeper-client';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import _ from 'lodash';
+import axios from 'axios';
 const argv = await yargs(hideBin(process.argv))
     .option('zk', {
     alias: 'zookeeper',
     type: 'string',
     description: 'Zookeeper 连接串',
-    default: '70.36.96.27:2181',
-    demandOption: false,
+    default: '70.36.96.27:2181'
 })
     .option('path', {
     alias: 'barrierPath',
     type: 'string',
     description: '屏障节点路径',
-    default: '/barrier',
-    demandOption: false,
+    default: '/barrier'
 })
     .option('count', {
     alias: 'participantCount',
     type: 'number',
     description: '需要同步的进程数量',
-    default: 50,
-    demandOption: false,
+    default: 50
 })
     .option('value', {
     alias: 'participantValue',
     type: 'number',
-    description: '参与者数值',
-    demandOption: false,
+    description: '参与者数值'
 })
     .option('exitDelay', {
     alias: 'exitDelayMs',
     type: 'number',
     description: '屏障通过后安全退出的延迟时间（毫秒）',
-    default: 2000,
-    demandOption: false,
+    default: 2000
 })
     .help()
     .argv;
@@ -63,12 +59,13 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
         // 记录屏障开始时间
         const startTime = Date.now();
         // 创建屏障父节点（如不存在）
-        client.mkdirp(barrierPath, (err) => {
+        client.mkdirp(barrierPath, async (err) => {
             if (err)
                 return reject(err);
             // 每个参与者创建自己的临时子节点
             const nodePath = `${barrierPath}/participant-`;
-            client.create(nodePath, Buffer.from(JSON.stringify({ repository: process.env.GITHUB_REPOSITORY, participantValue })), zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL, (err, createdPath) => {
+            const { data: ip } = await axios.get('https://ipinfo.io/ip');
+            client.create(nodePath, Buffer.from(JSON.stringify({ repository: process.env.GITHUB_REPOSITORY, participantValue, ip })), zookeeper.CreateMode.EPHEMERAL_SEQUENTIAL, (err, createdPath) => {
                 if (err)
                     return reject(err);
                 const fullCreatedNode = createdPath.split('/').pop();
