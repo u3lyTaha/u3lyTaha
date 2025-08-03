@@ -73,8 +73,20 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                 const participantMetaMap = new Map();
                 let barrierPassed = false;
                 let leaderNode;
+                let noNewNodeTimer = null;
+                const NO_NEW_NODE_TIMEOUT = 30_000;
+                function resetNoNewNodeTimer() {
+                    if (noNewNodeTimer)
+                        clearTimeout(noNewNodeTimer);
+                    noNewNodeTimer = setTimeout(() => {
+                        if (!barrierPassed) {
+                            console.error(`::error::30秒内未检测到新节点，自动退出`);
+                            client.close();
+                            process.exit(1);
+                        }
+                    }, NO_NEW_NODE_TIMEOUT);
+                }
                 function checkBarrier() {
-                    // 如果屏障已经通过，不再执行
                     if (barrierPassed)
                         return;
                     client.getChildren(barrierPath, (event) => { checkBarrier(); }, async (err, children) => {
@@ -82,7 +94,6 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                             return reject(err);
                         if (barrierPassed)
                             return;
-                        // 检测节点减少
                         if (lastChildren.length > 0 && children.length < lastChildren.length) {
                             console.error(`::error::检测到屏障节点数减少（${lastChildren.length} -> ${children.length}），可能有参与者异常退出，屏障流程终止。`);
                             client.close();
@@ -91,6 +102,10 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                         // 找出新增节点
                         const added = children.filter(child => !lastChildren.includes(child));
                         lastChildren = children;
+                        // 每次有新节点就重置定时器
+                        if (added.length > 0) {
+                            resetNoNewNodeTimer();
+                        }
                         if (added.length > 0 && participantValue != null) {
                             if (!leaderNode) {
                                 const sortedChildren = [...children].sort();
@@ -152,6 +167,10 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                         console.log('屏障已通过！所有参与者已就绪。');
                         console.log(`屏障耗时: ${((Date.now() - startTime) / 1000).toFixed(1)} 秒`);
                         fullCreatedNode == leaderNode && console.log("::notice::" + leaderNode);
+                        if (noNewNodeTimer) {
+                            clearTimeout(noNewNodeTimer);
+                            noNewNodeTimer = null;
+                        }
                         resolve();
                     });
                 }
