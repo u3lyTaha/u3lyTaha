@@ -79,11 +79,11 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                         clearTimeout(noNewNodeTimer);
                     noNewNodeTimer = setTimeout(() => {
                         if (!barrierPassed) {
-                            console.error(`::error::60秒内未检测到新节点，自动退出`);
+                            console.error(`::error::120秒内未检测到新节点，自动退出`);
                             client.close();
                             process.exit(1);
                         }
-                    }, 60_000);
+                    }, 120_000);
                 }
                 function checkBarrier() {
                     if (barrierPassed)
