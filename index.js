@@ -163,7 +163,7 @@ function enterBarrier(client, barrierPath, participantCount, participantValue) {
                             return;
                         }
                         barrierPassed = true;
-                        console.log('屏障已通过！所有参与者已就绪。');
+                        console.log('屏障已通过！所有参与者已就绪。', children.length);
                         console.log(`屏障耗时: ${((Date.now() - startTime) / 1000).toFixed(1)} 秒`);
                         fullCreatedNode == leaderNode && console.log("::notice::" + leaderNode);
                         if (noNewNodeTimer) {
